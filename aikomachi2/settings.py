@@ -125,7 +125,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = "/login/"  # 例: ログインページのURLを指定
+LOGIN_URL = "/accounts/login/"
 
 LOGIN_REDIRECT_URL = "/chat/"  # ログイン成功後のリダイレクト先
 LOGOUT_REDIRECT_URL = "/"  # ログアウト後のリダイレクト先
