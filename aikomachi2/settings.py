@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-@-fux_u&47!20b9ur&i((@f6uez#kiqbe%n3jb@sa(8-e5g2#j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["komachibot.onrender.com"]
 
 
 # Application definition
