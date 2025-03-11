@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mx-auto py-8">
+    <h1 class="text-2xl font-bold mb-4">タイムライン</h1>
+
+    <!-- 短歌生成フォーム -->
+    <form id="generateTankaForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">短歌を生成</button>
+    </form>
+
+    <div id="generatedTanka" class="mt-4 hidden">
+        <p class="font-bold">生成された短歌：</p>
+        <p id="tankaOutput"></p>
+        <form method="POST" action="{% url 'post_tanka' %}" onsubmit="return setTankaValues()">
+          {% csrf_token %}
+          <input type="hidden" id="tankaLine1" name="line1">
+          <input type="hidden" id="tankaLine2" name="line2">
+          <input type="hidden" id="tankaLine3" name="line3">
+          <input type="hidden" id="tankaLine4" name="line4">
+          <input type="hidden" id="tankaLine5" name="line5">
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">投稿</button>
+        </form>
+    </div>
+
+    <!-- 投稿一覧 -->
+    <div class="mt-6 space-y-4">
+      {% for post in posts %}
+        <div class="border p-4 rounded shadow-md bg-white">
+          <!-- 短歌の本文 -->
+          <p class="font-semibold">短歌：</p>
+          <p class="text-lg">{{ post.line1 }} {{ post.line2 }} {{ post.line3 }} {{ post.line4 }} {{ post.line5 }}</p>
+          <!-- 投稿者 -->
+          <p class="text-sm text-gray-500">投稿者: {{ post.user.username }}</p>
+
+          <!-- いいねボタン -->
+          <form method="POST" action="{% url 'like_tanka' post.id %}">
+            {% csrf_token %}
+            <button type="submit" class="{% if post.id in liked_posts %}bg-red-500{% else %}bg-gray-500{% endif %} text-white px-4 py-2 rounded">
+              ❤️ {{ post.tankalike_set.count }}
+            </button>
+          </form>
+
+          <!-- コメント一覧 -->
+          <div class="mt-2">
+            <p class="font-semibold">コメント:</p>
+            {% for comment in post.tankacomment_set.all %}
+              <p class="text-sm text-gray-700"><b>{{ comment.user.username }}:</b> {{ comment.text }}</p>
+            {% empty %}
+              <p class="text-sm text-gray-400">コメントはまだありません。</p>
+            {% endfor %}
+          </div>
+
+          <!-- コメントフォーム -->
+          <form method="POST" action="{% url 'comment_tanka' post.id %}">
+            {% csrf_token %}
+            <input type="text" name="text" placeholder="コメント" class="border rounded p-2 w-full">
+            <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded mt-2">送信</button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    function setTankaValues() {
+      const tankaText = document.getElementById("tankaOutput").innerText;
+      const tankaLines = tankaText.split(" ");
+  
+      if (tankaLines.length === 5) {
+        document.getElementById("tankaLine1").value = tankaLines[0];
+        document.getElementById("tankaLine2").value = tankaLines[1];
+        document.getElementById("tankaLine3").value = tankaLines[2];
+        document.getElementById("tankaLine4").value = tankaLines[3];
+        document.getElementById("tankaLine5").value = tankaLines[4];
+      } else {
+        alert("短歌が正しく生成されていません。");
+        return false;
+      }
+    }
+  
+    document.getElementById("generateTankaForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      fetch("{% url 'generate_tanka' %}")
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("tankaOutput").innerText = data.tanka.join(" ");
+          document.getElementById("generatedTanka").classList.remove("hidden");
+        });
+    });
+  </script>
+{% endblock %}

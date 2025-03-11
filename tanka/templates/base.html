@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KomachiBot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
+    <style>
+        /* ページ全体をフレックスボックスで設定 */
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: #f3f4f6;
+        }
+
+        /* メインコンテンツをフレックスで伸縮させる */
+        .content {
+            flex: 1;
+        }
+
+        /* フッターを下部に固定 */
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // ログアウト後にポップアップを表示
+            if (localStorage.getItem("logoutMessage")) {
+                alert("ログアウトしました");
+                localStorage.removeItem("logoutMessage"); // メッセージを削除
+            }
+
+            // ログアウトボタンを押したときにメッセージをセット
+            const logoutForm = document.getElementById("logoutForm");
+            if (logoutForm) {
+                logoutForm.addEventListener("submit", function () {
+                    localStorage.setItem("logoutMessage", "true");
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <header class="bg-green-600 text-white py-4 px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- 左側：サイトタイトル -->
+            <h1 class="text-xl font-bold">
+                <a href="{% url 'index' %}" class="text-white font-semibold hover:underline">KomachiBot</a>
+            </h1>
+            
+            <!-- 右側：ログイン / ログアウト -->
+        <div>
+            {% if user.is_authenticated %}
+                <span class="mr-4">ようこそ、{{ user.username }} さん</span>
+                <form id="logoutForm" action="{% url 'logout' %}" method="post" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-white font-semibold hover:underline">ログアウト</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="text-white font-semibold hover:underline">ログイン</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- コンテンツ部分 -->
+    <div class="container mx-auto py-8 content">
+        {% block content %}
+        <!-- ページごとの内容がここに埋め込まれる -->
+        {% endblock %}
+    </div>
+
+    <footer>
+        <p>&copy; 2025 AI小町 | All rights reserved.</p>
+    </footer>
+</body>
+</html>

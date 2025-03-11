@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="text-center">
+    <!-- ヘッダー -->
+    <h2 class="text-3xl font-bold mb-4">ようこそ！KomachiBotへ</h2>
+
+    <!-- ナビゲーションリンク -->
+    <div class="mb-8">
+        <a href="{% url 'chat' %}" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 mr-4">チャット</a>
+        <a href="{% url 'timeline' %}" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">タイムライン</a>
+    </div>
+
+    <!-- 学習した短歌数、生成した短歌数の表示 -->
+    <div class="text-lg">
+        <p>これまで学習した短歌数：{{ learned_tanka_count }}首</p>
+        <p>生成した短歌数：{{ generated_tanka_count }}首</p>
+    </div>
+</div>
+{% endblock %}

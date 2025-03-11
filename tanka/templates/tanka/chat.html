@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mx-auto py-8 flex">
+    <!-- 左側：入力フォーム -->
+    <div class="w-1/3 p-4 border-r">
+      <h1 class="text-2xl font-bold mb-4">短歌を詠んでください</h1>
+      
+      <form id="tankaForm" class="space-y-2">
+        {% csrf_token %}
+        <div>
+          <label class="block text-lg font-medium">一句目：</label>
+          <input type="text" id="line1" name="line1" class="w-full px-2 py-1 border rounded-lg text-sm" required>
+        </div>
+        <div>
+          <label class="block text-lg font-medium">二句目：</label>
+          <input type="text" id="line2" name="line2" class="w-full px-2 py-1 border rounded-lg text-sm" required>
+        </div>
+        <div>
+          <label class="block text-lg font-medium">三句目：</label>
+          <input type="text" id="line3" name="line3" class="w-full px-2 py-1 border rounded-lg text-sm" required>
+        </div>
+        <div>
+          <label class="block text-lg font-medium">四句目：</label>
+          <input type="text" id="line4" name="line4" class="w-full px-2 py-1 border rounded-lg text-sm" required>
+        </div>
+        <div>
+          <label class="block text-lg font-medium">五句目：</label>
+          <input type="text" id="line5" name="line5" class="w-full px-2 py-1 border rounded-lg text-sm" required>
+        </div>
+
+        <button type="submit" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg mt-2">詠む</button>
+      </form>
+    </div>
+
+    <!-- 右側：「あなたが詠んだ短歌」欄 -->
+    <div class="w-2/3 p-4">
+      <h2 class="text-xl font-bold mb-4">あなたが詠んだ短歌</h2>
+
+      <div id="chatBox" class="bg-gray-50 p-4 rounded-lg border h-[400px] overflow-y-auto flex flex-col-reverse">
+        {% for chat in chats %}
+        {% if chat.is_ai_response %}
+          <!-- AIの返事 -->
+          <div class="flex justify-start">
+            <div class="bg-gray-200 text-gray-900 p-3 rounded-lg shadow-lg max-w-md">
+              <p class="font-bold">KomachiBot:</p>
+              <p>{{ chat.ai_response }}</p>
+            </div>
+          </div>
+        {% else %}
+            <!-- ユーザーの短歌 -->
+            <div class="flex justify-end">
+              <div class="bg-blue-100 text-blue-900 p-3 rounded-lg shadow-lg max-w-md">
+                <p class="font-bold">あなた:</p>
+                <p>{{ chat.line1 }} {{ chat.line2 }} {{ chat.line3 }} {{ chat.line4 }} {{ chat.line5 }}</p>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("tankaForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        let formData = new FormData(this);
+        fetch("{% url 'send_tanka' %}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": formData.get("csrfmiddlewaretoken")
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.user_tanka) {
+                let chatBox = document.getElementById("chatBox");
+
+                // ユーザーの短歌を追加
+                let userMessage = document.createElement("div");
+                userMessage.className = "flex justify-end";
+                userMessage.innerHTML = `
+                    <div class="bg-blue-100 text-blue-900 p-3 rounded-lg shadow-lg max-w-md">
+                        <p class="font-bold">あなた:</p>
+                        <p>${data.user_tanka.join("<br>")}</p>
+                    </div>`;
+                chatBox.appendChild(userMessage);
+
+                // スクロールを一番下へ
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // AIの返答（1.5秒後に追加）
+                setTimeout(() => {
+                    let aiMessage = document.createElement("div");
+                    aiMessage.className = "flex justify-start";
+                    aiMessage.innerHTML = `
+                        <div class="bg-gray-200 text-gray-900 p-3 rounded-lg shadow-lg max-w-md">
+                            <p class="font-bold">AI小町:</p>
+                            <p>${data.ai_response}</p>
+                        </div>`;
+                    chatBox.appendChild(aiMessage);
+
+                    // 再度スクロール
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 1500);
+            }
+        });
+
+        // フォームをリセット
+        this.reset();
+    });
+  </script>
+{% endblock %}
+
+<style>
+/* チャット全体のデザイン */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 400px;  /* 固定の高さ */
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden; /* チャット枠を超えた部分を隠す */
+    background: #f9f9f9;
+}
+
+/* チャットメッセージ表示エリア（スクロール可能） */
+#chatBox {
+    flex: 1;
+    overflow-y: auto; /* チャットエリアのみスクロール */
+    padding: 10px;
+    display: flex;
+    flex-direction: column; /* 新しいメッセージを下に追加 */
+    height: 100%;
+}
+
+/* メッセージバブル */
+.message {
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px;
+    max-width: 70%;
+}
+
+.user {
+    background-color: #d1fae5;
+    align-self: flex-end;
+}
+
+.ai {
+    background-color: #e0e7ff;
+    align-self: flex-start;
+}
+  /* ページ全体のレイアウト調整 */
+  .container {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* フォームの幅調整 */
+  .form-container {
+    max-width: 400px;
+  }
+</style>
