@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -127,4 +129,7 @@ LOGIN_URL = "/login/"  # 例: ログインページのURLを指定
 
 LOGIN_REDIRECT_URL = "/chat/"  # ログイン成功後のリダイレクト先
 LOGOUT_REDIRECT_URL = "/"  # ログアウト後のリダイレクト先
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
