@@ -10,14 +10,14 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
-@login_required
+
 def chat_view(request):
     chats = TankaChat.objects.filter(user=request.user).order_by("created_at")  # 下から表示
     form = TankaChatForm()
 
     return render(request, "tanka/chat.html", {"chats": chats, "form": form})
 
-@login_required
+
 def send_tanka(request):
     """ 短歌を送信し、AIの反応を返す """
     if request.method == "POST":
@@ -65,13 +65,13 @@ def index_view(request):
         "generated_tanka_count": generated_tanka_count,
     })
 
-@login_required
+
 def generate_tanka_view(request):
     """ 短歌を生成し、ユーザーに提示するAPI """
     tanka = TankaChat.generate_tanka()
     return JsonResponse({"tanka": tanka.split(" ")}) # スペースで区切って配列にする
 
-@login_required
+
 def post_tanka_view(request):
     """ 生成された短歌を投稿するAPI """
     if request.method == "POST":
@@ -97,7 +97,7 @@ def post_tanka_view(request):
 
         return redirect("timeline")
 
-@login_required
+
 def timeline_view(request):
     """ タイムライン表示 """
     posts = TankaPost.objects.all().order_by("-created_at")
@@ -109,7 +109,7 @@ def timeline_view(request):
 
     return render(request, "tanka/timeline.html", {"posts": posts, "liked_posts": liked_posts})
 
-@login_required
+
 def like_tanka_view(request, tanka_id):
     """ いいねをトグルする """
     tanka = get_object_or_404(TankaPost, id=tanka_id)
@@ -120,7 +120,7 @@ def like_tanka_view(request, tanka_id):
 
     return redirect("timeline")
 
-@login_required
+
 def comment_tanka_view(request, tanka_id):
     """ 短歌にコメントを追加する """
     tanka = get_object_or_404(TankaPost, id=tanka_id)
